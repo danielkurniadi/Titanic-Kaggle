@@ -13,8 +13,8 @@ Titanic-Kaggle/
 |        
 ├── titanic-visualisation.ipynb #data-visualization part
 |
-├── titanic-modelling_v1.ipynb #modeling solution 1
+├── titanic-baseline.ipynb #baseline solution
 |
-├── titanic-modelling_v2.ipynb #modeling solution 2
+├── titanic-modelling.ipynb #modeling solution version 2...
 |
 ```
