@@ -6,15 +6,16 @@ In this challenge, kagglers complete the analysis of what sorts of people were l
 
 ```
 Titanic-Kaggle/
-├── datasets/
-|    ├── train.csv
-|    ├── test.csv
-|    ├── sample_submission.csv
-|        
-├── titanic-visualisation.ipynb #data-visualization part
-|
-├── titanic-baseline.ipynb #baseline solution
-|
-├── titanic-modelling.ipynb #modeling solution version 2...
-|
+|   
+├──notebook     
+    ├── titanic-visualisation.ipynb #data-visualization part
+    |
+    ├── titanic-baseline.ipynb #baseline solution
+    |
+    ├── titanic-modelling.ipynb 
+    |
+├── src
+    ├── data-preprocessing.py
+    |
+
 ```
