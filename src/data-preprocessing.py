@@ -14,18 +14,16 @@ def makeRegisterFunc():
 
 ###########################################################################################
 
-class TitanicBasePreprocessing():
+class BasePreprocessing():
     def __init__(self, train_filepath, test_filepath):
         self.og_train_df = pd.read_csv(train_filepath)
         self.og_test_df = pd.read_csv(test_filepath)
 
-        self.train_df = self.og_train_df
-        self.test_df = self.og_test_df
-
     ######## Cleaning #########
 
-    def __drop_features(self, features):
-        pass
+    def __drop_features(self, df, features):
+        df.drop(features, axis=1, inplace=True)
+        return df
 
     def __drop_nan_features(self, df, features):
         """Clean missing values in each columns/features by dropping rows with Nan values in
@@ -54,7 +52,45 @@ class TitanicBasePreprocessing():
         y_pred_nan = pd.Series(r_forest_reg.predict(X_null), index=age_index)
 
         return y_pred_nan
-    
+
+###########################################################################################
+
+class TitanicPreprocessing():
+    def __init__(self, train_filepath, test_filepath):
+        self.og_train_df = pd.read_csv(train_filepath)
+        self.og_test_df = pd.read_csv(test_filepath)
+
+    def transform(self):
+        train_df = self.og_test_df.copy(deep=True)
+        test_df = self.og_test_df.copy(deep=True)
+
+        #Binary Sex
+        train_df.replace({'male':1, 'female':0}, inplace=True)
+        test_df.replace({'male':1, 'female':0}, inplace=True)
+
+        #Cleaning Embarked and Fare
+        train_df = self.__drop_nan_features(train_df, ["Embarked", "Fare"])
+        test_df = self.__drop_nan_features(test_df, ["Embarked", "Fare"])
+
+        #Cleaning Cabin
+        train_df = self.__drop_features(train_df, ["Cabin"])
+        test_df = self.__drop_features(test_df, ["Cabin"])
+
+        #Cleaning Age
+        train_df = self.__fill_nan_byregression(train_df, "Age", ["SibSp", "Parch", "Age", "Sex", "Survived"])
+        test_df = self.__fill_nan_byregression(test_df, "Age", ["SibSp", "Parch", "Age", "Sex"])
+
+        #One-hot encoding for categoricals
+        cat_feats = ['Sex', 'Title', 'Fare_bin', 'Embarked']
+
+        one_hots = pd.get_dummies(train_df[cat_feats], drop_first=True)
+        train_df = train_df.join(one_hots)
+        
+        one_hots = pd.get_dummies(test_df[cat_feats], drop_first=True)
+        test_df = test_df.join(one_hots)
+
+        return train_df, test_df
+
     ####### Create features ########
 
     def __create_fam_size(self, df):
@@ -91,8 +127,14 @@ class TitanicBasePreprocessing():
         else:
             labels = ['CHILD', 'TEEN', 'ADULT', 'ELDER']
         df['Age_bin'] = pd.cut(df['Age'], bins=[0,13,25,50,120], labels=labels)
-        
+
         return df
 
-    def __create_new_features(self, df):
-        pass
+    def __create_fare_group(self, df, group_type='ordinal'):
+        if group_type=='ordinal':
+            labels = [1, 2, 3, 4, 5]
+        else:
+            labels = ['VERY_CHEAP', 'CHEAP', 'FAIR', 'EXPV', 'VERY_EXPV']
+        df['Fare_bin'] = pd.cut(df['Fare'], bins=[-0.01,7.91,14.45,31,50,600], labels=labels)
+
+        return df
